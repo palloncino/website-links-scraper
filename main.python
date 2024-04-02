@@ -1,0 +1,65 @@
+import os
+import re
+import requests
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from urllib.parse import urljoin
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Directory to save downloaded files
+download_folder = "downloads"
+if not os.path.exists(download_folder):
+    os.makedirs(download_folder)
+
+# Function to initialize the Selenium driver
+def init_driver():
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    # Specify the path to ChromeDriver if it's not in PATH
+    return webdriver.Chrome(executable_path='/usr/local/bin/chromedriver', options=options)
+
+# Function to download a file from a given URL
+def download_file(file_url, file_name):
+    try:
+        r = requests.get(file_url, allow_redirects=True)
+        file_path = os.path.join(download_folder, file_name)
+        with open(file_path, 'wb') as file:
+            file.write(r.content)
+        logging.info(f"Downloaded file: {file_path}")
+    except Exception as e:
+        logging.error(f"Failed to download {file_url}: {e}")
+
+# Function to process each page and download files
+def process_page(driver, url):
+    driver.get(url)
+    content_div = driver.find_elements(By.CSS_SELECTOR, "div.template__central-column-wrapper")
+    for content in content_div:
+        links = content.find_elements(By.TAG_NAME, "a")
+        for link in links:
+            href = link.get_attribute("href")
+            text = link.text
+            if href and (".pdf" in href.lower() or ".xls" in href.lower() or "/pdf/" in href.lower()):
+                file_type = "pdf" if ".pdf" in href.lower() else "xls"
+                file_name = f"{text.replace(' ', '_')}.{file_type}"
+                download_file(href, file_name)
+
+# Main function to start the process
+def main():
+    driver = init_driver()
+    base_url = "https://apsppieve.chebellagiornata.it/amministrazione-trasparente/"
+    driver.get(base_url)
+    page_urls = driver.find_elements(By.CSS_SELECTOR, "ul.wsp-pages-list a")
+    amm_tras_url_list = [link.get_attribute('href') for link in page_urls]
+
+    for url in amm_tras_url_list:
+        logging.info(f"Processing: {url}")
+        process_page(driver, url)
+
+    driver.quit()
+    logging.info("Completed scraping process.")
+
+if __name__ == "__main__":
+    main()

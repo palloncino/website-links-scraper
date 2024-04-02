@@ -1,0 +1,7 @@
+- get list of pages URL in an array AMM_TRAS_URL_LIST = [...], you can find it here: URL: https://apsppieve.chebellagiornata.it/amministrazione-trasparente/, DOM SELECTOR: ul.wsp-pages-list, this represent a list of links to pages, these are all the pages that we need to look up to, in out script.
+- go through each page content, the content is found again in a specific selector (we dont want to check header or footer or other links but only the interested links) inside the page content which is always the same: SELECTOR: "div.template__central-column-wrapper"
+- search for links (anchor tags) where the href attribute will either match the PDF or XLS path which is described below:\
+- example of PDF link: https://piccolospedale.it/document/pdf/organigramma/pb97aafc585d3462e6ae688ed70c849f/ you can recongize by the path (/PDF) or by using regex.
+- this instead is an example of XLS file: https://piccolospedale.it/webbe/images/files_ico/28/xlsx.png, so you can search the path for clues to determine wether one is what. There are explicit clues in each URL so I am confident, that we can infer what type of link it is, wherter you use regex or other means.
+- download the content of the files either pdf or xls in a local separate folder.
+- on another file, map where each downloaded file was retrieved from, also make sure you use the caption or text of the anchor tag to rename the dowloaded file.
