@@ -40,11 +40,14 @@ def process_page(driver, url):
         links = content.find_elements(By.TAG_NAME, "a")
         for link in links:
             href = link.get_attribute("href")
-            text = link.text
-            if href and (".pdf" in href.lower() or ".xls" in href.lower() or "/pdf/" in href.lower()):
-                file_type = "pdf" if ".pdf" in href.lower() else "xls"
-                file_name = f"{text.replace(' ', '_')}.{file_type}"
+            text = link.text.replace('/', '_').replace(' ', '_') if link.text else "unnamed_file"
+            if href and any(ext in href.lower() for ext in [".pdf", "/pdf/"]):
+                file_name = f"{text}.pdf"
                 download_file(href, file_name)
+            elif href and any(ext in href.lower() for ext in [".xls", ".xlsx", "/xls/"]):
+                file_name = f"{text}.xls"
+                download_file(href, file_name)
+
 
 # Main function to start the process
 def main():
